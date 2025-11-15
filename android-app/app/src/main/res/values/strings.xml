@@ -3,7 +3,7 @@
     <!--Home-->
     <string name="home_searchbar">Rechercher des lyrics, un artiste, etc.</string>
     <string name="home_add_lyrics">Ajouter une nouvelle chanson</string>
-    <string name="home_add_multiple_lyrics">Ajouter de nouvelles chanson d\'un fichier texte</string>
+    <string name="home_add_multiple_lyrics">Ajouter de nouvelles chansons d\'un fichier texte</string>
     <string name="home_recent">Récents</string>
     <!--Add Original-->
     <string name="al_title">Ajouter une nouvelle chanson</string>
