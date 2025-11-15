@@ -37,7 +37,9 @@ Application de visualisation de paroles de chanson.
 
 La totalité des captures d'écran se situent dans le dossier [`pics`](pics/).
 
-<img src="pics/accueil.jpg"  width="300" alt="Capture d'écran de la page d'accueil.">
-<img src="pics/traduit.jpg"  width="300" alt="Capture d'écran d'une page d'affichage des paroles, avec la traduction apparente.">
-<img src="pics/recherche.jpg"  width="300" alt="Capture d'écran de la page de recherche de terme.">
-<img src="pics/artiste.jpg"  width="300" alt="Capture d'écran d'une page d'affichage d'artiste.">
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="pics/accueil.jpg"  width="300" alt="Capture d'écran de la page d'accueil.">
+  <img src="pics/traduit.jpg"  width="300" alt="Capture d'écran d'une page d'affichage des paroles, avec la traduction apparente.">
+  <img src="pics/recherche.jpg"  width="300" alt="Capture d'écran de la page de recherche de terme.">
+  <img src="pics/artiste.jpg"  width="300" alt="Capture d'écran d'une page d'affichage d'artiste.">
+</div>
