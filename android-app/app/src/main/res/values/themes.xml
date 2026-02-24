@@ -1,9 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.LyricsParser" parent="Theme.Material3.Dark.NoActionBar">
-        <!-- https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/theme/res/values-night/themes_daynight.xml -->
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Base.Theme.LyricsParser" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/onPrimary</item>
+
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/onSecondary</item>
+
+        <item name="android:colorBackground">@color/background</item>
+
+        <item name="shapeAppearanceSmallComponent">@style/RoundedSmall</item>
+        <item name="android:fontFamily">@font/poppins</item>
+    </style>
+
+    <style name="RoundedSmall">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
     </style>
 
     <style name="Theme.LyricsParser" parent="Base.Theme.LyricsParser" />
