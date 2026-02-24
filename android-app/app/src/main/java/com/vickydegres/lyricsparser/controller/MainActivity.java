@@ -11,8 +11,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements RecentAdapter.Ite
     AppDatabase mDatabase;
     private SongRepository mSongRep;
     EditText mSearchbar;
-    ImageButton mAddLyrics;
+    Button mAddLyrics;
     TextView mAddMultiple;
     RecyclerView mRecyclerView;
     RecentAdapter mAdapter;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements RecentAdapter.Ite
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_v2);
+        setContentView(R.layout.activity_main);
 
 
         mRecentSongs = new ArrayList<>();
