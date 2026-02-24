@@ -12,6 +12,9 @@
     <color name="surface">#FFFFFF</color>
     <color name="onSurface">#1C1B1F</color>
 
+    <color name="romTransDisplay">#B4A8A8</color>#847C91
+    <color name="secondTitle">#847C91</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

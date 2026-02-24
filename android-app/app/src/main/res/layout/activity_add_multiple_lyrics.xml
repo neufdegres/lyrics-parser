@@ -18,8 +18,8 @@
         android:layout_marginBottom="28dp"
         android:text="@string/al_title"
         android:textAlignment="viewEnd"
-        android:textColor="@android:color/darker_gray"
-        android:textSize="24sp" />
+        android:textColor="@color/secondTitle"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/textView7"

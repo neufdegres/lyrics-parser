@@ -19,8 +19,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/lyrics_row_rom_test"
-        android:textColor="#615B5B"
+        android:textColor="@color/romTransDisplay"
         android:textStyle="italic"
+        android:textSize="12sp"
         android:visibility="gone" />
 
     <TextView
@@ -28,7 +29,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/lyrics_row_tra_test"
-        android:textColor="#615B5B"
+        android:textColor="@color/romTransDisplay"
         android:textStyle="bold"
+        android:textSize="12sp"
         android:visibility="gone" />
 </LinearLayout>

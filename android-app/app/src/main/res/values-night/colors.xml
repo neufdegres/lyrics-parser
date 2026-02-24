@@ -11,4 +11,6 @@
 
     <color name="surface">#1E1E1E</color>
     <color name="onSurface">#FFFFFF</color>
+
+    <color name="romTransDisplay">#615B5B</color>
 </resources>

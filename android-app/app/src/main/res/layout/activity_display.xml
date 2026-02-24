@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:text="@string/display_title_test"
-            android:textSize="32sp" />
+            android:textSize="28sp" />
 
         <TextView
             android:id="@+id/display_artist"
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="@string/display_artist_test"
-            android:textSize="24sp" />
+            android:textSize="20sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -96,7 +96,7 @@
                 android:text="@string/display_underline"
                 android:textAlignment="viewStart"
                 android:textSize="16sp"
-                android:textStyle="italic" />
+                android:textColor="@color/secondTitle"/>
 
             <RadioGroup
                 android:layout_width="wrap_content"
