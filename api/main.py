@@ -1,0 +1,28 @@
+from fastapi import FastAPI, HTTPException
+from app.services.translation import translate
+from app.services.romanization import romanize
+from app.models.requests import TranslationRequest, RomanizationRequest
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"message": "LyricsParser API is running !"}
+
+@app.post("/translation")
+async def translate_lyrics(req: TranslationRequest):
+    done, tra_lines = translate(req.lines, req.lang)
+    
+    if not done :
+        raise HTTPException(status_code=500, detail="Erreur lors de la traduction")
+    
+    return {"lines" : tra_lines}
+
+@app.post("/romanization")
+async def romanize_lyrics(req: RomanizationRequest):
+    done, rom_lines = romanize(req.lines, req.lang)
+    
+    if not done :
+        raise HTTPException(status_code=500, detail="Erreur lors de la romanization")
+    
+    return {"lines" : rom_lines}
