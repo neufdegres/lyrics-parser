@@ -38,11 +38,10 @@ def romanize(lines: list[str], lang: str = "jp") :
                     sub_res.append({"lang" : "ja", "text": text})            
             res = link(sub_res).strip()
 
-            rom.append(f"{res}\n")
+            rom.append(res)
                     
         return True, rom 
         
     except Exception as e :
-        # util.error_traceback_in_file(repr(e))
         # print(repr(e))
         return False, None

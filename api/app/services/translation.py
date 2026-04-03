@@ -21,5 +21,5 @@ def translate(lines: list[str], lang: str = "jp") :
         return True, res
 
     except Exception as e :
-        # util.error_traceback_in_file(repr(e))
+        # print(repr(e))
         return False, None
