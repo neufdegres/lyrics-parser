@@ -11,6 +11,9 @@ async def root():
 
 @app.post("/translation")
 async def translate_lyrics(req: TranslationRequest):
+    if req.lines == None or len(req.lines) == 0 :
+        raise HTTPException(status_code=400, detail="Pas de texte à traduire")
+    
     done, tra_lines = translate(req.lines, req.lang)
     
     if not done :
@@ -20,9 +23,12 @@ async def translate_lyrics(req: TranslationRequest):
 
 @app.post("/romanization")
 async def romanize_lyrics(req: RomanizationRequest):
+    if req.lines == None or len(req.lines) == 0 :
+        raise HTTPException(status_code=400, detail="Pas de texte à romaniser")
+    
     done, rom_lines = romanize(req.lines, req.lang)
     
     if not done :
-        raise HTTPException(status_code=500, detail="Erreur lors de la romanization")
+        raise HTTPException(status_code=500, detail="Erreur lors de la romanisation")
     
     return {"lines" : rom_lines}
