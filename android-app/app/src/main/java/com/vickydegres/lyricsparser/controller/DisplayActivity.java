@@ -36,19 +36,16 @@ import com.vickydegres.lyricsparser.database.repositories.OriginalRepository;
 import com.vickydegres.lyricsparser.database.repositories.SongRepository;
 import com.vickydegres.lyricsparser.models.DisplayModel;
 import com.vickydegres.lyricsparser.net.RequestQueueSingleton;
-import com.vickydegres.lyricsparser.util.Func;
 import com.vickydegres.lyricsparser.util.Language;
 import com.vickydegres.lyricsparser.util.Lyrics;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 
@@ -198,173 +195,129 @@ public class DisplayActivity extends AppCompatActivity
     }
 
     private void loadTitleRomanization() {
-        // Instantiate the RequestQueue.
-        // RequestQueue queue = Volley.newRequestQueue(this);
-        RequestQueue queue = RequestQueueSingleton.getInstance(
-                this.getApplicationContext()).getRequestQueue();
+        HashMap<String, Object> tmp = new HashMap<>();
+        tmp.put("lines", List.of(mModel.getTitle()));
 
-        String serverAddress = BuildConfig.SERVER_ADDRESS;
-        String url = serverAddress + "romanizer.php";
-
-        // Request a string response from the provided URL.
-        try {
-            // Create JSON request
-            HashMap<String, Object> tmp = new HashMap<>();
-            ArrayList<String> tmpArray = new ArrayList<>();
-            tmpArray.add(mModel.getTitle());
-            tmp.put("lines", tmpArray);
-            JSONObject json = new JSONObject(toJSON(tmp));
-            Log.v("json", json.toString());
-
-            JsonObjectRequest request = new JsonObjectRequest
-                    (Request.Method.POST, url, json, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            HashMap<String, Object> map = parseRequest(response);
-                            if (map.get("code").equals("0")) {
-                                LinkedList<String> tmp2list = (LinkedList<String>) map.get("lines");
-                                mModel.setTitleRomanized(tmp2list.get(0));
-                            } else {
-                                Toast.makeText(DisplayActivity.this, map.get("code").toString(), Toast.LENGTH_LONG).show();
-                                mModel.setTitleRomanized("[romanization impossible]");
-                            }
-                        }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e("volleyyyyy", error.toString());
-                            Toast.makeText(DisplayActivity.this, "Volley error. 0", Toast.LENGTH_LONG).show();
-                            mModel.setTitleRomanized("[romanization impossible]");
-                        }
-                    });
-
-            request.setRetryPolicy(new DefaultRetryPolicy(
-                    10000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-            // Add the request to the RequestQueue.
-            queue.add(request);
-
-        } catch (JSONException e) {
-            Toast.makeText(DisplayActivity.this, "JSONObject error.", Toast.LENGTH_LONG).show();
-            Log.e("JSONException",e.getMessage());
-            mModel.setTitleRomanized("[romanization impossible]");
-        }
+        sendRequestToAPI("rom_title", tmp);
     }
 
     private void loadRomanization() {
-        // Instantiate the RequestQueue.
-        // RequestQueue queue = Volley.newRequestQueue(this);
-        RequestQueue queue = RequestQueueSingleton.getInstance(
-                this.getApplicationContext()).getRequestQueue();
+        HashMap<String, Object> tmp = new HashMap<>();
+        tmp.put("lines", mModel.getOriginal().getLines());
 
-        String serverAddress = BuildConfig.SERVER_ADDRESS;
-        String url = serverAddress + "romanizer.php";
-
-        // Request a string response from the provided URL.
-        try {
-            // Create JSON request
-            HashMap<String, Object> tmp = new HashMap<>();
-            tmp.put("lines", mModel.getOriginal().getLines());
-            JSONObject json = new JSONObject(toJSON(tmp));
-            Log.v("json", json.toString());
-
-            JsonObjectRequest request = new JsonObjectRequest
-                    (Request.Method.POST, url, json, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            HashMap<String, Object> map = parseRequest(response);
-                            if (map.get("code").equals("0")) {
-                                Lyrics rom = new Lyrics((LinkedList<String>) map.get("lines"));
-                                mModel.setRomanization(rom);
-                                mAdapter.notifyDataSetChanged();
-                                mRomanize.setText(R.string.display_romanized);
-                            } else {
-                                Toast.makeText(DisplayActivity.this, map.get("code").toString(), Toast.LENGTH_LONG).show();
-                                mRomanize.setText(R.string.display_romanize_error);
-                            }
-                        }
-                    }, new Response.ErrorListener() {
-
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e("volleyyyyy", error.toString());
-                    Toast.makeText(DisplayActivity.this, "Volley error. 1", Toast.LENGTH_LONG).show();
-                    mRomanize.setText(R.string.display_romanize_error);
-                }
-            });
-
-            request.setRetryPolicy(new DefaultRetryPolicy(
-                    10000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-            // Add the request to the RequestQueue.
-            queue.add(request);
-
-        } catch (JSONException e) {
-            Toast.makeText(DisplayActivity.this, "JSONObject error.", Toast.LENGTH_LONG).show();
-            Log.e("JSONException",e.getMessage());
-            mRomanize.setText(R.string.display_romanize_error);
-        }
+        sendRequestToAPI("rom", tmp);
     }
 
     private void loadTranslation() {
+        HashMap<String, Object> tmp = new HashMap<>();
+        tmp.put("lines", mModel.getOriginal().getLines());
+
+        sendRequestToAPI("tra", tmp);
+    }
+
+    private void sendRequestToAPI(String type, HashMap<String, Object> body) {
         // Instantiate the RequestQueue.
-        RequestQueue queue = RequestQueueSingleton.getInstance(
-                this.getApplicationContext()).getRequestQueue();
+        RequestQueue queue =
+                RequestQueueSingleton.getInstance(this.getApplicationContext()).getRequestQueue();
 
         String serverAddress = BuildConfig.SERVER_ADDRESS;
-        String url = serverAddress + "translator.php";
+        String url = serverAddress + (type.equals("tra") ? "/translation" : "/romanization");
 
         // Request a string response from the provided URL.
-        try {
-            // Create JSON request
-            HashMap<String, Object> tmp = new HashMap<>();
-            tmp.put("lines", mModel.getOriginal().getLines());
-            JSONObject json = new JSONObject(toJSON(tmp));
-            Log.v("json", json.toString());
 
-            JsonObjectRequest request = new JsonObjectRequest
-                    (Request.Method.POST, url, json, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            HashMap<String, Object> map = parseRequest(response);
-                            if (map.get("code").equals("0")) {
-                                Lyrics rom = new Lyrics((LinkedList<String>) map.get("lines"));
-                                mModel.setTranslation(rom);
-                                mAdapter.notifyDataSetChanged();
-                                mTranslate.setText(R.string.display_translated);
-                            } else {
-                                Toast.makeText(DisplayActivity.this, map.get("code").toString(), Toast.LENGTH_LONG).show();
-                                mTranslate.setText(R.string.display_translate_error);
+        // Create JSON request
+        JSONObject json = new JSONObject(body);
+        Log.v("json", json.toString());
+
+        JsonObjectRequest request = new JsonObjectRequest
+            (Request.Method.POST, url, json, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    JSONArray arr = response.optJSONArray("lines");
+
+                    if (type.equals("rom_title")) {
+                        String result = "[romanization impossible]";
+
+                        if (arr != null && arr.length() > 0) {
+                            result = arr.optString(0, result);
+                        }
+
+                        mModel.setTitleRomanized(result);
+                    } else {
+                        if (arr != null && arr.length() > 0) {
+                            LinkedList<String> lines = new LinkedList<>();
+
+                            for (int i = 0; i < arr.length(); i++) {
+                                lines.add(arr.optString(i));
                             }
-                        }
-                    }, new Response.ErrorListener() {
 
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e("volleyyyyy", error.toString());
-                            Toast.makeText(DisplayActivity.this, "Volley error. 2", Toast.LENGTH_LONG).show();
+                            Lyrics ly = new Lyrics(lines);
+
+                            if (type.equals("rom")) {
+                                mModel.setRomanization(ly);
+                                mRomanize.setText(R.string.display_romanized);
+                            } else {
+                                mModel.setTranslation(ly);
+                                mTranslate.setText(R.string.display_translated);
+                            }
+
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    }
+
+                }
+            }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String text = "";
+
+                    if (error.networkResponse != null) {
+                        int code = error.networkResponse.statusCode;
+                        if (code >= 400) {
+                            if (error.networkResponse.data != null) {
+                                try {
+                                    String json = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                                    JSONObject obj = new JSONObject(json);
+
+                                    String detail = obj.getString("detail");
+
+                                    text = code + " : " + detail;
+                                } catch (Exception e) {
+                                    text = "Erreur HTTP " + code;
+                                }
+                            }
+                            text = "Erreur HTTP " + code;
+                        }
+                    } else {
+                        // text = error.toString();
+                        text = "Erreur";
+                    }
+
+                    Toast.makeText(DisplayActivity.this, text, Toast.LENGTH_LONG).show();
+
+                    switch(type) {
+                        case "rom_title" :
+                            mModel.setTitleRomanized("[romanization impossible]");
+                            break;
+                        case "rom" :
+                            mRomanize.setText(R.string.display_romanize_error);
+                            break;
+                        case "tra" :
                             mTranslate.setText(R.string.display_translate_error);
-                        }
-                    });
+                            break;
+                    }
+                }
+            });
 
-            request.setRetryPolicy(new DefaultRetryPolicy(
-                    10000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        );
 
-            // Add the request to the RequestQueue.
-            queue.add(request);
-
-        } catch (JSONException e) {
-            Toast.makeText(DisplayActivity.this, "JSONObject error.", Toast.LENGTH_LONG).show();
-            Log.e("JSONException",e.getMessage());
-            mTranslate.setText(R.string.display_translate_error);
-        }
+        // Add the request to the RequestQueue.
+        queue.add(request);
     }
 
     private void showActionDialog() {
@@ -372,68 +325,6 @@ public class DisplayActivity extends AppCompatActivity
         dialog.show(getSupportFragmentManager(), "DisplayActionDialogFragment");
     }
 
-    private static HashMap<String, Object> parseRequest(JSONObject response) {
-        HashMap<String, Object> res = new HashMap<>();
-        try {
-            res.put("code", response.getString("code"));
-            res.put("lines", jsonToLinkedList(response.getJSONArray("lines")));
-            Log.v("generateRomTra", res.toString());
-        } catch (JSONException e) {
-            Log.v("TAG", "[JSONException] e : " + e.getMessage());
-        }
-        return res;
-    }
-
-    private static LinkedList<String> jsonToLinkedList(JSONArray ja) {
-        LinkedList<String> res = new LinkedList<>();
-        try {
-            if (ja != null) {
-                int len = ja.length();
-                for (int i=0;i<len;i++){
-                    res.add(ja.get(i).toString());
-                }
-            }
-        } catch (JSONException e) {
-            return null;
-        }
-        return res;
-    }
-
-    private static String toJSON(HashMap<String,Object> data) {
-        StringBuilder res = new StringBuilder();
-        res.append("{");
-        String tmp = "";
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            tmp = String.format("\"%s\":", key);
-            tmp += valueToJSON(value);
-            res.append(tmp);
-            res.append(",");
-        }
-        return res.substring(0,res.length()-1) + "}";
-    }
-
-    private static String valueToJSON(Object value) {
-        if (value instanceof String) {
-            String tmp = Func.escape((String)value);
-            return String.format("\"%s\"", tmp);
-        } else if (value instanceof Number) {
-            return String.valueOf(value);
-        } else if (value instanceof Boolean) {
-            return String.format("%b", value);
-        } else if (value instanceof ArrayList || value instanceof LinkedList) {
-            List<Object> list = (List<Object>) value;
-            StringBuilder res = new StringBuilder();
-            res.append("[");
-            for(Object v : list) {
-                res.append(valueToJSON(v));
-                res.append(",");
-            }
-            return res.toString().substring(0,res.length()-1) + "]";
-        }
-        return value.toString();
-    }
 
     public void onCopyClick(DialogFragment dialog) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
