@@ -82,4 +82,8 @@ dependencies {
     // Volley
 
     implementation ("com.android.volley:volley:1.2.1")
+
+    /// OkHttp
+
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
 }

@@ -1,5 +1,6 @@
 package com.vickydegres.lyricsparser.controller;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,13 +18,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vickydegres.lyricsparser.BuildConfig;
 import com.vickydegres.lyricsparser.R;
@@ -35,19 +29,28 @@ import com.vickydegres.lyricsparser.database.SongInfo;
 import com.vickydegres.lyricsparser.database.repositories.OriginalRepository;
 import com.vickydegres.lyricsparser.database.repositories.SongRepository;
 import com.vickydegres.lyricsparser.models.DisplayModel;
-import com.vickydegres.lyricsparser.net.RequestQueueSingleton;
 import com.vickydegres.lyricsparser.util.Language;
 import com.vickydegres.lyricsparser.util.Lyrics;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class DisplayActivity extends AppCompatActivity
                              implements DisplayActionDialogFragment.DisplayActionDialogListener{
@@ -55,6 +58,7 @@ public class DisplayActivity extends AppCompatActivity
     private SongRepository mSongRep;
     private OriginalRepository mOriRep;
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    private final OkHttpClient httpClient = new OkHttpClient();
     DisplayModel mModel;
     TextView mTitle, mArtist, mLangText;
     ImageView mLangFlag;
@@ -198,126 +202,138 @@ public class DisplayActivity extends AppCompatActivity
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("lines", List.of(mModel.getTitle()));
 
-        sendRequestToAPI("rom_title", tmp);
+        sendRequestToAPI(RequestType.TITLE_ROM, tmp);
     }
 
     private void loadRomanization() {
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("lines", mModel.getOriginal().getLines());
 
-        sendRequestToAPI("rom", tmp);
+        sendRequestToAPI(RequestType.ROM, tmp);
     }
 
     private void loadTranslation() {
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("lines", mModel.getOriginal().getLines());
 
-        sendRequestToAPI("tra", tmp);
+        sendRequestToAPI(RequestType.TRA, tmp);
     }
 
-    private void sendRequestToAPI(String type, HashMap<String, Object> body) {
-        // Instantiate the RequestQueue.
-        RequestQueue queue =
-                RequestQueueSingleton.getInstance(this.getApplicationContext()).getRequestQueue();
-
+    private void sendRequestToAPI(RequestType type, @NonNull HashMap<String, Object> body) {
         String serverAddress = BuildConfig.SERVER_ADDRESS;
-        String url = serverAddress + (type.equals("tra") ? "/translation" : "/romanization");
+        String url = serverAddress + (type == RequestType.TRA ? "/translation" : "/romanization");
 
-        // Request a string response from the provided URL.
-
-        // Create JSON request
         JSONObject json = new JSONObject(body);
         Log.v("json", json.toString());
 
-        JsonObjectRequest request = new JsonObjectRequest
-            (Request.Method.POST, url, json, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    JSONArray arr = response.optJSONArray("lines");
+        RequestBody reqBody = RequestBody.create(
+                json.toString(),
+                MediaType.get("application/json; charset=utf-8"));
 
-                    if (type.equals("rom_title")) {
-                        String result = "[romanization impossible]";
+        Request request = new Request.Builder()
+                .url(url)
+                .post(reqBody)
+                .build();
 
-                        if (arr != null && arr.length() > 0) {
-                            result = arr.optString(0, result);
-                        }
+        httpClient.newCall(request).enqueue(new Callback() {
 
-                        mModel.setTitleRomanized(result);
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String resBody = responseBody.string();
+                    JSONObject resJson = new JSONObject(resBody);
+
+                    if (response.isSuccessful()) {
+                        showSuccessfulResponse(type, resJson);
                     } else {
-                        if (arr != null && arr.length() > 0) {
-                            LinkedList<String> lines = new LinkedList<>();
+                        String text = "";
 
-                            for (int i = 0; i < arr.length(); i++) {
-                                lines.add(arr.optString(i));
-                            }
+                        int code = response.code();
 
-                            Lyrics ly = new Lyrics(lines);
-
-                            if (type.equals("rom")) {
-                                mModel.setRomanization(ly);
-                                mRomanize.setText(R.string.display_romanized);
-                            } else {
-                                mModel.setTranslation(ly);
-                                mTranslate.setText(R.string.display_translated);
-                            }
-
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    }
-
-                }
-            }, new Response.ErrorListener() {
-
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    String text = "";
-
-                    if (error.networkResponse != null) {
-                        int code = error.networkResponse.statusCode;
                         if (code >= 400) {
-                            if (error.networkResponse.data != null) {
+                            if (resBody.isEmpty()) {
                                 try {
-                                    String json = new String(error.networkResponse.data, StandardCharsets.UTF_8);
-                                    JSONObject obj = new JSONObject(json);
-
-                                    String detail = obj.getString("detail");
-
+                                    String detail = resJson.getString("detail");
                                     text = code + " : " + detail;
                                 } catch (Exception e) {
                                     text = "Erreur HTTP " + code;
                                 }
+                            } else {
+                                text = "Erreur HTTP " + code;
                             }
-                            text = "Erreur HTTP " + code;
+                        } else {
+                            text = "Erreur";
                         }
-                    } else {
-                        // text = error.toString();
-                        text = "Erreur";
+
+                        showError(type, text);
                     }
 
-                    Toast.makeText(DisplayActivity.this, text, Toast.LENGTH_LONG).show();
 
-                    switch(type) {
-                        case "rom_title" :
-                            mModel.setTitleRomanized("[romanization impossible]");
-                            break;
-                        case "rom" :
-                            mRomanize.setText(R.string.display_romanize_error);
-                            break;
-                        case "tra" :
-                            mTranslate.setText(R.string.display_translate_error);
-                            break;
-                    }
+                } catch (JSONException e) {
+                    showError(type, "JSONObject error");
                 }
-            });
+            }
 
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                10000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        );
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                showError(type, "Erreur lors de l'exécution de la requête");
+                e.printStackTrace();
+            }
+        });
+    }
 
-        // Add the request to the RequestQueue.
-        queue.add(request);
+    private void showSuccessfulResponse(RequestType type, @NonNull JSONObject resJson) {
+        JSONArray arr = resJson.optJSONArray("lines");
+
+        if (type == RequestType.TITLE_ROM) {
+            String result = "[romanization impossible]";
+
+            if (arr != null && arr.length() > 0) {
+                result = arr.optString(0, result);
+            }
+
+            mModel.setTitleRomanized(result);
+        } else {
+            if (arr != null && arr.length() > 0) {
+                LinkedList<String> lines = new LinkedList<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    lines.add(arr.optString(i));
+                }
+
+                Lyrics ly = new Lyrics(lines);
+
+                runOnUiThread(() -> {
+                    if (type == RequestType.ROM) {
+                        mModel.setRomanization(ly);
+                        mRomanize.setText(R.string.display_romanized);
+                    } else {
+                        mModel.setTranslation(ly);
+                        mTranslate.setText(R.string.display_translated);
+                    }
+
+                    mAdapter.notifyDataSetChanged();
+                });
+            }
+        }
+    }
+
+    private void showError(RequestType type, String text) {
+        runOnUiThread(() -> {
+            Toast.makeText(DisplayActivity.this, text, Toast.LENGTH_LONG).show();
+
+            switch (type) {
+                case TITLE_ROM:
+                    mModel.setTitleRomanized("[romanization impossible]");
+                    break;
+                case ROM:
+                    mRomanize.setText(R.string.display_romanize_error);
+                    break;
+                case TRA:
+                    mTranslate.setText(R.string.display_translate_error);
+                    break;
+            }
+        });
     }
 
     private void showActionDialog() {
@@ -343,5 +359,11 @@ public class DisplayActivity extends AppCompatActivity
     @Override
     public void onDeleteClick(DialogFragment dialog) {
         // TODO : créer fragment "vous vous VRAIMENT supprimer ces lyrics ??"
+    }
+
+    private enum RequestType {
+        TITLE_ROM,
+        ROM,
+        TRA
     }
 }
