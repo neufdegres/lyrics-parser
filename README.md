@@ -1,17 +1,16 @@
 # LyricsParser
 
-Application de visualisation de paroles de chanson.
+Application de visualisation de paroles de chanson multilingue.
 
 ## Technologies utilisées
 
 - Java (Android SDK)
-- Côté serveur : PHP + Python
+- Côté serveur (API) : Python (FastAPI)
 
 ## Dépendances
 
-- Java 17
-- Python 3.10.12
-- PHP 8.4.12
+- Java >= 17
+- Python >= 3.12
 - Clé d'API DeepL
 
 ## Fonctionnalités de l'application
@@ -26,12 +25,48 @@ Application de visualisation de paroles de chanson.
 
 ## Comment configurer l'application
 
-- Coté serveur :
-  - déplacer les fichiers du dossier `server/` dans un serveur Web (ex : Apache HTTP Server)
-  - modifier le fichier [`config.properties`](android-app/config.properties) avec l'addresse du dossier contenant ces mêmes fichiers (ex: `https://0.0.0.0/LyricsParser`)
-  - modifier le fichier [`deepl`](server/deepl) avec votre clé d'API générée sur le site de [DeepL](https://www.deepl.com/fr/translator)
+### Coté serveur (FastAPI)
 
-- Coté application : ouvrir le dossier `android-app/` dans Android Studio puis exécuter
+1. Installer les dépendances Python
+
+    Créer un environnement virtuel et installer les dépendances du fichier `requirements.txt`
+
+    ```sh
+    python3.12 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
+
+2. Configurer la clé DeepL
+
+    Modifier le fichier [`api/data/deepl`](api/data/deepl) avec votre clé d'API générée sur le site de [DeepL](https://www.deepl.com/fr/translator)
+
+3. Lancer l’API FastAPI
+
+    ```sh
+    uvicorn main:app --host 0.0.0.0 --port 8000
+    ```
+
+    L’API sera accessible à l’adresse :
+
+    ```txt
+    http://[IP_SERVEUR]:8000
+    ```
+
+### Coté application Android
+
+1. Configurer l'addresse du serveur
+
+    Modifier le fichier [`android-app/config.properties`](android-app/config.properties) avec l'addresse de votre serveur
+
+    ```txt
+    // exemple
+    SERVER_ADDRESS=http://[IP_SERVEUR]:8000
+    ```
+
+2. Ouverture et exécution
+
+    Ouvrir le dossier `android-app/` dans Android Studio puis exécuter l'application
 
 ## Ajouter de nouvelles chansons via un fichier ".txt"
 
