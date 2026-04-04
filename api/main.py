@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.services.translation import translate
+from app.services.translation import translate_v2
 from app.services.romanization import romanize
 from app.models.requests import TranslationRequest, RomanizationRequest
 
@@ -22,7 +22,7 @@ async def translate_lyrics(req: TranslationRequest):
     if req.lines == None or len(req.lines) == 0 :
         raise HTTPException(status_code=400, detail="Pas de texte à traduire")
     
-    done, tra_lines = translate(req.lines, req.lang)
+    done, tra_lines = translate_v2(req.lines, req.lang)
     
     if not done :
         raise HTTPException(status_code=500, detail="Erreur lors de la traduction")
