@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.translation import translate_v2
 from app.services.romanization import romanize
+from app.services.sample import import_lyrics
 from app.models.requests import TranslationRequest, RomanizationRequest
 
 app = FastAPI()
@@ -40,3 +41,12 @@ async def romanize_lyrics(req: RomanizationRequest):
         raise HTTPException(status_code=500, detail="Erreur lors de la romanisation")
     
     return {"lines" : rom_lines}
+
+@app.get("/sample")
+async def get_lyrics_sample() :
+    done, lyrics = import_lyrics()
+    
+    if not done :
+        raise HTTPException(status_code=500, detail="Erreur lors de l'import des lyrics (serveur)'")
+    
+    return {"lyrics" : lyrics}
