@@ -1,4 +1,5 @@
 from app.services.detect_lang import detect_ja
+from korean_romanizer.romanizer import Romanizer
 from cutlet import Cutlet
 from unicodedata import normalize
 
@@ -21,27 +22,44 @@ def link(items : list):
         
 def romanize(lines: list[str], lang: str = "jp") :    
     try :
-        cut = Cutlet(use_foreign_spelling=False)
-        
         rom = []
         
-        for l in lines :
-            raw = normalize('NFKC', l)
-            tab = raw.split(" ")
-            sub_res = []
-            for t in tab :
-                is_ja = detect_ja(t)
-                if not is_ja :
-                    sub_res.append({"lang" : "else", "text": t})
-                else :
-                    text = cut.romaji(t).lower()
-                    sub_res.append({"lang" : "ja", "text": text})            
-            res = link(sub_res).strip()
+        if lang == "ko" : rom = romanize_ko(lines)
 
-            rom.append(res)
-                    
+        else : rom = romanize_jp(lines)
+
         return True, rom 
         
     except Exception as e :
         # print(repr(e))
         return False, None
+    
+def romanize_jp(lines : list[str]) :
+    cut = Cutlet(use_foreign_spelling=False)
+        
+    rom = []
+    
+    for l in lines :
+        raw = normalize('NFKC', l)
+        tab = raw.split(" ")
+        sub_res = []
+        for t in tab :
+            is_ja = detect_ja(t)
+            if not is_ja :
+                sub_res.append({"lang" : "else", "text": t})
+            else :
+                text = cut.romaji(t).lower()
+                sub_res.append({"lang" : "ja", "text": text})            
+        res = link(sub_res).strip()
+
+        rom.append(res)
+                
+    return rom 
+
+def romanize_ko(lines : list[str]) :
+    rom = [] 
+    
+    for l in lines :
+        rom.append(Romanizer(l).romanize())
+        
+    return rom

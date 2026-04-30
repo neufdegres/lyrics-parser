@@ -39,9 +39,9 @@ def translate_v2(lines: list[str], lang: str = "jp") :
         for l in list(lines_set) :
             ori = normalize('NFKC', l)
             if len(ori.strip()) != 0 :
-                translated[ori] = translator.translate_text(ori, source_lang="JA", target_lang="EN-US").text
-                
-        
+                sl = "KO" if lang != "jp" else "JA"
+                translated[ori] = translator.translate_text(ori, source_lang=sl, target_lang="EN-US").text
+                        
         for i in range(len(lines)) :
             if len(lines[i].strip()) != 0 :
                 res[i] = translated[normalize('NFKC', lines[i])]
