@@ -13,32 +13,6 @@ public class Language {
         this.flag = flag;
     }
 
-    public Language(String code) {
-        switch(code.toLowerCase()) {
-            case "fr" :
-                this.code = "FR";
-                this.name = "français";
-                this.flag = Flag.FR.getId();
-                break;
-            case "en" :
-                this.code = "EN";
-                this.name = "english";
-                this.flag = Flag.EN.getId();
-                break;
-            default :
-                this.code = "JP";
-                this.name = "日本語";
-                this.flag = Flag.JP.getId();
-                break;
-        }
-    }
-
-    public Language() { // tmp : JP
-        this.code = "JP";
-        this.name = "日本語";
-        this.flag = Flag.JP.getId();
-    }
-
     public String getCode() {
         return code;
     }

@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.vickydegres.lyricsparser.R;
 import com.vickydegres.lyricsparser.controller.adapters.RecentAdapter;
+import com.vickydegres.lyricsparser.data.LanguageRepository;
 import com.vickydegres.lyricsparser.database.AppDatabase;
 import com.vickydegres.lyricsparser.database.AppDatabaseSingleton;
 import com.vickydegres.lyricsparser.database.SongInfo;
@@ -47,8 +48,9 @@ public class MainActivity extends AppCompatActivity implements RecentAdapter.Ite
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        LanguageRepository.load(this);
 
+        setContentView(R.layout.activity_main);
 
         mRecentSongs = new ArrayList<>();
 

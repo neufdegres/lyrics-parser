@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.vickydegres.lyricsparser.R;
 import com.vickydegres.lyricsparser.controller.adapters.SpinLangAdapter;
+import com.vickydegres.lyricsparser.data.LanguageRepository;
 import com.vickydegres.lyricsparser.database.AppDatabase;
 import com.vickydegres.lyricsparser.database.AppDatabaseSingleton;
 import com.vickydegres.lyricsparser.database.repositories.SongRepository;
@@ -134,7 +135,8 @@ public class AddLyrics1Fragment extends Fragment {
 
     private void setSpinnerData() {
         SpinLangAdapter dataAdapter = new SpinLangAdapter(
-                getActivity(), android.R.layout.simple_spinner_dropdown_item, getLanguages());
+                getActivity(), android.R.layout.simple_spinner_dropdown_item,
+                LanguageRepository.getAll());
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // dataAdapter.setDropDownViewResource(R.layout.languages_spinner);
 
@@ -191,36 +193,5 @@ public class AddLyrics1Fragment extends Fragment {
         String artist = mArtist.getText().toString();
         return (title.length() > 0 && !Func.isBlank(title)
             && artist.length() > 0 && !Func.isBlank(artist));
-    }
-
-    private Language[] getLanguages() {
-        Scanner sc;
-        InputStream is = getResources().openRawResource(R.raw.languages);
-        sc = new Scanner(is);
-
-        ArrayList<Language> array = new ArrayList<>();
-
-        String tmp = "";
-        while (sc.hasNextLine()) {
-            tmp = sc.nextLine();
-            if (tmp.startsWith("code,")) continue;
-            String[] tab = tmp.split(",");
-            array.add(new Language(tab[0]));
-        }
-
-        sc.close();
-        try {
-            is.close();
-        } catch (IOException e) {
-            return null;
-        }
-
-        Language[] res = new Language[array.size()];
-
-        for(int i=0; i<res.length; i++) {
-            res[i] = array.get(i);
-        }
-
-        return res;
     }
 }

@@ -22,6 +22,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vickydegres.lyricsparser.BuildConfig;
 import com.vickydegres.lyricsparser.R;
 import com.vickydegres.lyricsparser.controller.adapters.DisplayAdapter;
+import com.vickydegres.lyricsparser.data.LanguageRepository;
 import com.vickydegres.lyricsparser.database.AppDatabase;
 import com.vickydegres.lyricsparser.database.AppDatabaseSingleton;
 import com.vickydegres.lyricsparser.database.Original;
@@ -29,7 +30,6 @@ import com.vickydegres.lyricsparser.database.SongInfo;
 import com.vickydegres.lyricsparser.database.repositories.OriginalRepository;
 import com.vickydegres.lyricsparser.database.repositories.SongRepository;
 import com.vickydegres.lyricsparser.models.DisplayModel;
-import com.vickydegres.lyricsparser.util.Language;
 import com.vickydegres.lyricsparser.util.Lyrics;
 
 import org.json.JSONArray;
@@ -180,8 +180,8 @@ public class DisplayActivity extends AppCompatActivity
                             mModel.setTitle(curr.getTitle());
                             mModel.setArtist(curr.getArtist());
                             String lang = curr.getLang();
-                            mModel.setLang(new Language(lang));
-                            if (!lang.equals("JP")) {
+                            mModel.setLang(LanguageRepository.get(lang));
+                            if (!(lang.equals("JP") || lang.equals("KO"))) {
                                 mRomanize.setEnabled(false);
                                 mTranslate.setEnabled(false);
                             } else {
@@ -201,6 +201,7 @@ public class DisplayActivity extends AppCompatActivity
     private void loadTitleRomanization() {
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("lines", List.of(mModel.getTitle()));
+        tmp.put("lang", mModel.getLang().getCode().toLowerCase());
 
         sendRequestToAPI(RequestType.TITLE_ROM, tmp);
     }
@@ -208,6 +209,7 @@ public class DisplayActivity extends AppCompatActivity
     private void loadRomanization() {
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("lines", mModel.getOriginal().getLines());
+        tmp.put("lang", mModel.getLang().getCode().toLowerCase());
 
         sendRequestToAPI(RequestType.ROM, tmp);
     }
@@ -215,6 +217,7 @@ public class DisplayActivity extends AppCompatActivity
     private void loadTranslation() {
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("lines", mModel.getOriginal().getLines());
+        tmp.put("lang", mModel.getLang().getCode().toLowerCase());
 
         sendRequestToAPI(RequestType.TRA, tmp);
     }

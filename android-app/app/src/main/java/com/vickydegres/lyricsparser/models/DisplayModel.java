@@ -1,5 +1,6 @@
 package com.vickydegres.lyricsparser.models;
 
+import com.vickydegres.lyricsparser.data.LanguageRepository;
 import com.vickydegres.lyricsparser.util.Language;
 import com.vickydegres.lyricsparser.util.Lyrics;
 
@@ -19,7 +20,7 @@ public class DisplayModel {
         this.titleRomanized = "";
         this.titleMode = TITLE_MODE.ORIGINAL;
         this.artist = "";
-        this.lang = new Language();
+        this.lang = LanguageRepository.get("");
         this.original = new Lyrics();
         this.romanization = new Lyrics();
         this.translation = new Lyrics();

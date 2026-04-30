@@ -1,6 +1,10 @@
 package com.vickydegres.lyricsparser.util;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 public class Func {
@@ -18,22 +22,12 @@ public class Func {
         return true;
     }
 
-    public static LinkedList<String> initializeAL(int size) {
-        LinkedList<String> res = new LinkedList<>();
-        for (int i = 0; i < size; i++) {
-            res.add("\\");
-        }
-        return res;
-    }
+    public static String readStream(InputStream is) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) sb.append(line);
 
-    public static String escape(String s) {
-        return s.replace("\\", "\\\\")
-                .replace("\t", "\\t")
-                .replace("\b", "\\b")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\f", "\\f")
-                // .replace("\'", "\\'")      // <== not necessary
-                .replace("\"", "\\\"");
+        return sb.toString();
     }
 }

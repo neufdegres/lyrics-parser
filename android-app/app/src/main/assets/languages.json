@@ -1,0 +1,6 @@
+[
+  { "code": "EN", "name": "English" },
+  { "code": "FR", "name": "Français" },
+  { "code": "JP", "name": "日本語" },
+  { "code": "KO", "name": "한국말" }
+]

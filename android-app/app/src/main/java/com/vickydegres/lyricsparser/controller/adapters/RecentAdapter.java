@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.vickydegres.lyricsparser.R;
+import com.vickydegres.lyricsparser.data.LanguageRepository;
 import com.vickydegres.lyricsparser.util.Song;
 
 import java.util.ArrayList;
@@ -37,18 +38,7 @@ public class RecentAdapter extends RecyclerView.Adapter<RecentAdapter.ViewHolder
         Song tmp = mSongs.get(position);
         holder.mTitle.setText(tmp.getTitle());
         holder.mArtist.setText(tmp.getArtist());
-        // TODO : remplacer par setImageResource(tmp.getLang().getFlag().getId())
-        switch(tmp.getLang()) {
-            case "FR" :
-                holder.mFlag.setImageResource(R.drawable.fr);
-                break;
-            case "EN" :
-                holder.mFlag.setImageResource(R.drawable.en);
-                break;
-            case "JP" :
-                holder.mFlag.setImageResource(R.drawable.jp);
-                break;
-        }
+        holder.mFlag.setImageResource(LanguageRepository.get(tmp.getLang()).getFlag());
     }
 
     // total number of rows
